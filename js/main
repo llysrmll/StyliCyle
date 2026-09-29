@@ -1,0 +1,29 @@
+/*
+  auth.js handles demo signup and login.
+
+  Signup:
+  - Validates names, email, age, terms, and matching passwords.
+  - Shows a "verification code sent" alert.
+  - Saves tempUser in localStorage and displays verification section.
+
+  Signup Verification:
+  - Demo code is 123456.
+  - If correct: moves tempUser to users list, enables 2FA, redirects to home.html.
+  - If incorrect: shows alert.
+  - Resend button only displays "Code resent".
+
+  Login:
+  - Validates email, password, and terms checkbox.
+  - Searches localStorage users list.
+  - If invalid: shows "Invalid email or password".
+
+  Login Verification:
+  - For 2FA accounts: hides login form, shows verification section, saves currentUser.
+  - Demo code 123456 logs in and redirects to home.html.
+  - Wrong code shows error.
+  - Resend button only displays alert.
+
+  Note:
+  - Demo only. Uses localStorage and fixed codes.
+  - Not secure for real authentication.
+*/
