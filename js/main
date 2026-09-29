@@ -23,7 +23,7 @@
   - Wrong code shows error.
   - Resend button only displays alert.
 
-  Note:
+
   - Demo only. Uses localStorage and fixed codes.
   - Not secure for real authentication.
 */
