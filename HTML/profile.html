@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Profile - StyliCycle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/style.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="rental.html">Rentals</a>
+      <a href="delivery.html">Delivery</a>
+      <a href="chatbox.html">Messages</a>
+      <a href="profile.html" class="active">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <div class="nav-chat-input">
+        <input id="navChatInput" type="text" placeholder="Ask chat...">
+        <button type="button" id="navChatButton">➤</button>
+      </div>
+      <button type="button" class="nav-button" id="navNotificationBtn">Notifications</button>
+    </div>
+  </nav>
+
+  <main class="profile-container">
+    <section class="profile-header">
+      <img src="../Images/baby.jpg" alt="Elise Alata" class="profile-photo">
+      <div class="profile-info">
+        <p class="eyebrow">Verified Vendor</p>
+        <h1>Elise Alata</h1>
+        <p class="business-name">Event Couture</p>
+        <p class="contact-line">+6312339893 &nbsp;·&nbsp; hello@eventcouture.ph</p>
+
+        <div class="profile-actions">
+          <button class="btn btn-primary">Message Admin</button>
+          <button class="btn btn-outline">Manage Rentals</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="section-heading">
+        <h2>About</h2>
+      </div>
+      <p class="about-text">Trusted partner for bridal, formalwear, and event rentals, dressing Manila's celebrations with care and craftsmanship.</p>
+
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt>Location</dt>
+          <dd>Manila, Philippines</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Specialty</dt>
+          <dd>Gowns &amp; Suits</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Verified</dt>
+          <dd>Yes, official partner</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Member since</dt>
+          <dd>January 2024</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="portfolio">
+      <div class="section-heading">
+        <h2>Portfolio</h2>
+      </div>
+
+      <ul class="portfolio-list">
+        <li class="portfolio-item">
+          <span class="item-name">Silver Sequin Gown</span>
+          <span class="item-desc">Perfect for parties and evening events.</span>
+        </li>
+        <li class="portfolio-item">
+          <span class="item-name">Black Tuxedo Suit</span>
+          <span class="item-desc">Sharp wedding and formal event attire.</span>
+        </li>
+        <li class="portfolio-item">
+          <span class="item-name">Ivory Bridal Gown</span>
+          <span class="item-desc">Elegant and timeless bridal choice.</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../JS/common.js"></script>
+  <script src="../JS/profile.js"></script>
+</body>
+</html>
