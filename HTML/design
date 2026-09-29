@@ -1,0 +1,33 @@
+<!-- 
+StyliCycle is a clothing‑rental website built around a shared navigation bar 
+and coordinated page layouts. Its HTML structure organizes the site into clear 
+sections, ensuring that each page follows a consistent framework and user‑friendly flow.
+-->
+
+<!-- 
+Page Breakdown
+-->
+
+<!-- 
+Home Page
+- Displays rental suggestions, quick actions, posts, and notifications.
+- HTML sections divide content into cards and feeds for easy browsing.
+-->
+
+<!-- 
+Rentals Page
+- Provides vendor submission forms for clothing listings.
+- Structured tables and input fields make listings straightforward.
+-->
+
+<!-- 
+Delivery Page
+- Contains scheduling forms and a route map placeholder.
+- HTML forms capture delivery details, while layout elements guide users.
+-->
+
+<!-- 
+Messages & Admin Support
+- Chat interfaces organized with message containers and input areas.
+- HTML ensures clear separation between user messages and admin responses.
+-->
