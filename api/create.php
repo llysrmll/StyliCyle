@@ -1,36 +1,37 @@
 <?php
+// Receives the rental form as FormData (so the photo can be uploaded)
 require_once __DIR__ . '/../../includes/helpers.php';
 require_method('POST');
 $me = require_login();
 
-function coords($c): array {
-    if (!is_array($c) || count($c) !== 2 || !is_numeric($c[0]) || !is_numeric($c[1])) return [null, null];
-    $lat = (float) $c[0]; $lng = (float) $c[1];
-    if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) return [null, null];
-    return [$lat, $lng];
+function measure($v, string $label): ?float {
+    if ($v === null || $v === '') return null;
+    if (!is_numeric($v) || $v < 0 || $v > 500) fail("Invalid $label");
+    return (float) $v;
 }
 
 $in = input();
-$pickup = trim($in['pickupAddress'] ?? '');
-$dropoff = trim($in['deliveryAddress'] ?? '');
-$time = $in['pickupTime'] ?? '';
-$item = $in['itemType'] ?? '';
-$notes = trim($in['notes'] ?? '');
+$title = trim($in['title'] ?? '');
+$category = trim($in['category'] ?? '');
+$size = $in['size'] ?? '';
+$desc = trim($in['description'] ?? '');
+$price = $in['price_per_day'] ?? '';
 
-if ($pickup === '' || mb_strlen($pickup) > 500) fail('Pickup address is required');
-if ($dropoff === '' || mb_strlen($dropoff) > 500) fail('Delivery address is required');
-if (!in_array($item, ['tuxedo', 'gown', 'suit', 'dress', 'costume', 'other'], true)) fail('Please select a clothing type');
+if ($title === '' || mb_strlen($title) > 150) fail('Item name is required');
+if ($category === '' || mb_strlen($category) > 100) fail('Category is required');
+if (!in_array($size, ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Custom'], true)) fail('Please select a size');
+if ($desc === '') fail('Description is required');
+if (!is_numeric($price) || $price <= 0 || $price > 1000000) fail('Enter a valid price per day');
+if (empty($in['agree_terms']) || empty($in['verify_condition'])) fail('You must agree to the terms and verify the item condition');
 
-$dt = DateTime::createFromFormat('Y-m-d\TH:i', $time);
-if (!$dt) fail('Invalid pickup time');
-if ($dt < new DateTime('-5 minutes')) fail('Pickup time is in the past');
+$chest  = measure($in['chest_cm'] ?? null, 'chest/bust');
+$waist  = measure($in['waist_cm'] ?? null, 'waist');
+$length = measure($in['length_cm'] ?? null, 'length');
 
-[$pLat, $pLng] = coords($in['pickupCoords'] ?? null);
-[$dLat, $dLng] = coords($in['deliveryCoords'] ?? null);
+$image = isset($_FILES['image']) ? save_image($_FILES['image'], 'rentals') : null;
 
-$stmt = db()->prepare('INSERT INTO deliveries
-    (user_id, pickup_address, delivery_address, pickup_time, item_type, notes, pickup_lat, pickup_lng, delivery_lat, delivery_lng)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-$stmt->execute([$me, $pickup, $dropoff, $dt->format('Y-m-d H:i:s'), $item, $notes ?: null, $pLat, $pLng, $dLat, $dLng]);
+$stmt = db()->prepare('INSERT INTO rentals (owner_id, title, category, size, chest_cm, waist_cm, length_cm, price_per_day, description, image)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+$stmt->execute([$me, $title, $category, $size, $chest, $waist, $length, $price, $desc, $image]);
 
 json_out(['success' => true, 'id' => (int) db()->lastInsertId()], 201);
