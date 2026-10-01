@@ -7,6 +7,13 @@ if (document.getElementById('deliveryForm')) {
   let pickupCoords = null;
   let deliveryCoords = null;
 
+  const STATUS_LABELS = {
+    scheduled: 'Scheduled',
+    picked_up: 'Picked up',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled'
+  };
+
   function showMapFallback() {
     const fallback = document.getElementById('mapFallback');
     if (fallback) fallback.hidden = false;
@@ -25,7 +32,6 @@ if (document.getElementById('deliveryForm')) {
       return;
     }
 
-    // Add OpenStreetMap tiles
     const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     });
@@ -36,11 +42,9 @@ if (document.getElementById('deliveryForm')) {
     });
     tileLayer.addTo(map);
 
-    // Add a marker
     marker = L.marker(defaultLocation, { draggable: true }).addTo(map);
 
-    // Update marker position on drag
-    marker.on('dragend', function() {
+    marker.on('dragend', function () {
       const position = marker.getLatLng();
       console.log('Marker moved to:', position.lat, position.lng);
     });
@@ -63,7 +67,6 @@ if (document.getElementById('deliveryForm')) {
         const lng = parseFloat(location.lon);
         const coords = [lat, lng];
 
-        // Update the corresponding input field with the formatted address
         const pickupInput = document.getElementById('pickupAddress');
         const deliveryInput = document.getElementById('deliveryAddress');
 
@@ -75,13 +78,10 @@ if (document.getElementById('deliveryForm')) {
           deliveryCoords = coords;
         }
 
-        // Center map on the found location
         map.setView(coords, 15);
         marker.setLatLng(coords);
 
-        // Create route if both addresses are set
         updateRoute();
-
       } else {
         alert('Address not found. Please try a different search term.');
       }
@@ -93,12 +93,10 @@ if (document.getElementById('deliveryForm')) {
 
   // Update route between pickup and delivery points
   function updateRoute() {
-    // Remove existing route
     if (routingControl) {
       map.removeControl(routingControl);
     }
 
-    // Create new route if both coordinates are available
     if (pickupCoords && deliveryCoords) {
       routingControl = L.Routing.control({
         waypoints: [
@@ -106,13 +104,10 @@ if (document.getElementById('deliveryForm')) {
           L.latLng(deliveryCoords[0], deliveryCoords[1])
         ],
         routeWhileDragging: false,
-        createMarker: function(i, waypoint, n) {
-          const markerOptions = {
-            draggable: true,
-          };
+        createMarker: function (i, waypoint, n) {
+          const markerOptions = { draggable: true };
 
           if (i === 0) {
-            // Pickup marker
             markerOptions.icon = L.icon({
               iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
               shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -122,7 +117,6 @@ if (document.getElementById('deliveryForm')) {
               shadowSize: [41, 41]
             });
           } else if (i === n - 1) {
-            // Delivery marker
             markerOptions.icon = L.icon({
               iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
               shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -137,7 +131,6 @@ if (document.getElementById('deliveryForm')) {
         }
       }).addTo(map);
 
-      // Fit map to show the entire route
       setTimeout(() => {
         const bounds = L.latLngBounds([pickupCoords, deliveryCoords]);
         map.fitBounds(bounds, { padding: [20, 20] });
@@ -153,26 +146,36 @@ if (document.getElementById('deliveryForm')) {
     }
     pickupCoords = null;
     deliveryCoords = null;
-    marker.setLatLng([14.5995, 120.9842]); // Reset to default location
+    marker.setLatLng([14.5995, 120.9842]);
     map.setView([14.5995, 120.9842], 12);
   }
 
-  function loadDeliveries() {
-    const deliveries = JSON.parse(localStorage.getItem('deliveries') || '[]');
+  // NEW: deliveries now come from the database
+  async function loadDeliveries() {
     const deliveryList = document.getElementById('deliveryList');
-    deliveryList.innerHTML = '';
+    const res = await api('delivery/list.php');
+    if (!res.success) {
+      deliveryList.innerHTML = `<p>${escapeHtml(res.error || 'Could not load deliveries.')}</p>`;
+      return;
+    }
 
-    deliveries.forEach(delivery => {
+    deliveryList.innerHTML = '';
+    if (res.deliveries.length === 0) {
+      deliveryList.innerHTML = '<p>No deliveries yet. Schedule your first one!</p>';
+      return;
+    }
+
+    res.deliveries.forEach(delivery => {
       const item = document.createElement('div');
       item.className = 'delivery-item';
       item.style.cursor = 'pointer';
       item.innerHTML = `
-        <p><strong>Pickup:</strong> ${delivery.pickupAddress}</p>
-        <p><strong>Delivery:</strong> ${delivery.deliveryAddress}</p>
-        <p><strong>Time:</strong> ${new Date(delivery.pickupTime).toLocaleString()}</p>
-        <p><strong>Item:</strong> ${delivery.itemType}</p>
-        <p><strong>Status:</strong> ${delivery.status}</p>
-        ${delivery.notes ? `<p><strong>Notes:</strong> ${delivery.notes}</p>` : ''}
+        <p><strong>Pickup:</strong> ${escapeHtml(delivery.pickupAddress)}</p>
+        <p><strong>Delivery:</strong> ${escapeHtml(delivery.deliveryAddress)}</p>
+        <p><strong>Time:</strong> ${escapeHtml(new Date(delivery.pickupTime).toLocaleString())}</p>
+        <p><strong>Item:</strong> ${escapeHtml(delivery.itemType)}</p>
+        <p><strong>Status:</strong> ${escapeHtml(STATUS_LABELS[delivery.status] || delivery.status)}</p>
+        ${delivery.notes ? `<p><strong>Notes:</strong> ${escapeHtml(delivery.notes)}</p>` : ''}
       `;
 
       // Click an entry to show its route on the map
@@ -190,39 +193,41 @@ if (document.getElementById('deliveryForm')) {
     });
   }
 
-  document.getElementById('deliveryForm').addEventListener('submit', function(e) {
+  // NEW: saving goes to PHP instead of localStorage
+  document.getElementById('deliveryForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    const pickupAddress = document.getElementById('pickupAddress').value;
-    const deliveryAddress = document.getElementById('deliveryAddress').value;
+    const form = this;
+    const pickupAddress = document.getElementById('pickupAddress').value.trim();
+    const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
     const pickupTime = document.getElementById('pickupTime').value;
     const itemType = document.getElementById('itemType').value;
-    const notes = document.getElementById('notes').value;
+    const notes = document.getElementById('notes').value.trim();
 
-    // Save delivery (using localStorage for demo)
-    const deliveries = JSON.parse(localStorage.getItem('deliveries') || '[]');
-    deliveries.push({
-      id: Date.now(),
-      pickupAddress,
-      deliveryAddress,
-      pickupTime,
-      itemType,
-      notes,
-      status: 'Scheduled',
-      pickupCoords,
-      deliveryCoords
+    if (!itemType) {
+      alert('Please select a clothing type.');
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    const res = await api('delivery/create.php', {
+      method: 'POST',
+      body: { pickupAddress, deliveryAddress, pickupTime, itemType, notes, pickupCoords, deliveryCoords }
     });
-    localStorage.setItem('deliveries', JSON.stringify(deliveries));
+    submitBtn.disabled = false;
+
+    if (!res.success) {
+      alert(res.error);
+      return;
+    }
 
     alert('Delivery scheduled successfully!');
-    loadDeliveries();
-    this.reset();
-
-    // Clear route and coordinates after scheduling
+    form.reset();
     clearRoute();
+    loadDeliveries();
   });
 
-  // Initialize map when page loads
-  window.addEventListener('load', function() {
+  window.addEventListener('load', function () {
     initMap();
     loadDeliveries();
   });

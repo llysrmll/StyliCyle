@@ -1,7 +1,7 @@
-// auth.js - load on index.html (login) and signup.html
+// auth.js - load on index.html (login) and signup.html, AFTER common.js
 
 // ---------- Register ----------
-document.getElementById("registerForm")?.addEventListener("submit", function(e) {
+document.getElementById("registerForm")?.addEventListener("submit", async function (e) {
   e.preventDefault();
   const firstName = document.getElementById("firstName").value.trim();
   const middleName = document.getElementById("middleName").value.trim();
@@ -14,6 +14,10 @@ document.getElementById("registerForm")?.addEventListener("submit", function(e) 
 
   if (!agreeTermsSignup) {
     alert("You must agree to the Terms and Conditions to register.");
+    return;
+  }
+  if (password.length < 8) {
+    alert("Password must be at least 8 characters.");
     return;
   }
   if (password !== confirmPassword) {
@@ -29,39 +33,54 @@ document.getElementById("registerForm")?.addEventListener("submit", function(e) 
     return;
   }
 
-  // Simulate sending verification code
-  alert("Verification code sent to " + email);
+  const submitBtn = this.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  const res = await api("auth/signup.php", {
+    method: "POST",
+    body: { firstName, middleName, lastName, age, email, password }
+  });
+  submitBtn.disabled = false;
 
-  // Hide form and show 2FA setup
+  if (!res.success) {
+    alert(res.error);
+    return;
+  }
+
+  // dev_code only exists while DEV_MODE is true in config/app.php
+  alert(res.dev_code
+    ? "Dev mode - your verification code is " + res.dev_code
+    : "Verification code sent to " + email);
+
   document.getElementById("registerForm").style.display = "none";
   document.getElementById("twoFactorSetup").style.display = "block";
-
-  // Store temp user data
-  localStorage.setItem("tempUser", JSON.stringify({ firstName, middleName, lastName, email, password, age }));
 });
 
-document.getElementById("verifyCodeBtn")?.addEventListener("click", function() {
+document.getElementById("verifyCodeBtn")?.addEventListener("click", async function () {
   const code = document.getElementById("twoFactorCode").value.trim();
-  if (code === "123456") { // Simulate correct code
-    const tempUser = JSON.parse(localStorage.getItem("tempUser"));
-    // Save user with 2FA enabled
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    users.push({ ...tempUser, twoFactorEnabled: true });
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.removeItem("tempUser");
-    alert("Registration successful! 2FA enabled.");
+  if (!code) {
+    alert("Enter the 6-digit code.");
+    return;
+  }
+  const res = await api("auth/verify_signup.php", { method: "POST", body: { code } });
+  if (res.success) {
+    alert("Registration successful!");
     window.location.href = "home.html";
   } else {
-    alert("Invalid code. Please try again.");
+    alert(res.error);
   }
 });
 
-document.getElementById("resendCodeBtn")?.addEventListener("click", function() {
-  alert("Code resent.");
+document.getElementById("resendCodeBtn")?.addEventListener("click", async function () {
+  const res = await api("auth/resend_code.php", { method: "POST" });
+  if (!res.success) {
+    alert(res.error);
+    return;
+  }
+  alert(res.dev_code ? "Dev mode - your new code is " + res.dev_code : "Code resent.");
 });
 
 // ---------- Login ----------
-document.getElementById("loginForm")?.addEventListener("submit", function(e) {
+document.getElementById("loginForm")?.addEventListener("submit", async function (e) {
   e.preventDefault();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -72,36 +91,10 @@ document.getElementById("loginForm")?.addEventListener("submit", function(e) {
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
-  const user = users.find(u => u.email === email && u.password === password);
-
-  if (!user) {
-    alert("Invalid email or password.");
-    return;
-  }
-
-  if (user.twoFactorEnabled) {
-    // Show 2FA
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("twoFactorLogin").style.display = "block";
-    localStorage.setItem("currentUser", JSON.stringify(user));
-    alert("Verification code sent to " + user.email);
-  } else {
-    alert("Login successful!");
-    window.location.href = "home.html";
-  }
-});
-
-document.getElementById("verifyLoginCodeBtn")?.addEventListener("click", function() {
-  const code = document.getElementById("loginTwoFactorCode").value.trim();
-  if (code === "123456") { // Simulate correct code
-    alert("Login successful!");
+  const res = await api("auth/login.php", { method: "POST", body: { email, password } });
+  if (res.success) {
     window.location.href = "home.html";
   } else {
-    alert("Invalid code. Please try again.");
+    alert(res.error);
   }
-});
-
-document.getElementById("resendLoginCodeBtn")?.addEventListener("click", function() {
-  alert("Code resent.");
 });

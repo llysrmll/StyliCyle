@@ -1,39 +1,48 @@
 // rental.js - load on rental.html (after common.js)
 
-const listings = [
-  {
-    title: "Evening Gown",
-    detail: "Perfect for formal events — ₱650/day",
-    image: "../Images/evening.jpg"
-  },
-  {
-    title: "Tuxedo Suit",
-    detail: "Classic suit for weddings — ₱850/day",
-    image: "../Images/tuxedo.jpg"
-  },
-  {
-    title: "Bridal Gown",
-    detail: "Elegant wedding dress — ₱1200/day",
-    image: "../Images/bridal.jpg"
-  }
-];
+async function loadListings() {
+  const list = document.getElementById("rentalListings");
+  if (!list) return;
 
-if (document.getElementById("rentalListings")) {
-  renderList("rentalListings", listings, item => `
+  const res = await api("rental/list.php");
+  if (!res.success) {
+    showToast(res.error || "Could not load listings.");
+    return;
+  }
+  if (res.rentals.length === 0) {
+    list.innerHTML = "<li>You have no listings yet. Submit your first item!</li>";
+    return;
+  }
+
+  renderList("rentalListings", res.rentals, item => `
     <div class="listing-card">
-      <img src="${item.image}" alt="${item.title}">
+      ${item.image ? `<img src="../${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">` : ""}
       <div class="listing-card-content">
-        <strong>${item.title}</strong>
-        <span>${item.detail}</span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <span>${escapeHtml(item.category)} · Size ${escapeHtml(item.size)} · ₱${Number(item.price_per_day).toLocaleString()}/day</span>
+        <span>Status: ${escapeHtml(item.status)}</span>
       </div>
     </div>
   `);
 }
 
-document.getElementById("rentalForm")?.addEventListener("submit", function (e) {
+document.getElementById("rentalForm")?.addEventListener("submit", async function (e) {
   e.preventDefault();
-  showToast("Rental listing submitted for review.");
-  this.reset();
+  const form = this;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  // FormData picks up every input by its name="" attribute, including the photo
+  const res = await api("rental/create.php", { method: "POST", body: new FormData(form) });
+  submitBtn.disabled = false;
+
+  if (res.success) {
+    showToast("Rental listing submitted for review.");
+    form.reset();
+    loadListings();
+  } else {
+    showToast(res.error || "Could not submit listing.");
+  }
 });
 
 document.getElementById("rentalMyListingsBtn")?.addEventListener("click", () => {
@@ -48,3 +57,5 @@ document.getElementById("rentalViewMessagesBtn")?.addEventListener("click", () =
 document.getElementById("rentalNotificationsBtn")?.addEventListener("click", () => {
   showToast("No rental notifications found.");
 });
+
+loadListings();
