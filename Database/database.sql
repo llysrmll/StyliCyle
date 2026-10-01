@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS stylicycle CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE stylicycle;
 
--- Fields match signup.html: first/middle/last name, age, email, password
+
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(60) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Fields match rental.html: name, category, size, chest/waist/length, description, photo
+
 CREATE TABLE rentals (
   id INT AUTO_INCREMENT PRIMARY KEY,
   owner_id INT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE rentals (
   INDEX (owner_id), INDEX (status)
 );
 
--- Fields match delivery.html + the map coordinates from delivery.js
+
 CREATE TABLE deliveries (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
