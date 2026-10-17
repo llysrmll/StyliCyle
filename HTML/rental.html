@@ -42,21 +42,27 @@
           <h1>List your item for rent</h1>
           <p class="subtitle">Share your dress, suit, or accessory with trusted event renters.</p>
 
+          <!-- CHANGED: every field now has a name="" so PHP can read it -->
           <form id="rentalForm" class="rental-form">
             <label class="field-group">
               <span>Item Name</span>
-              <input type="text" placeholder="Wedding gown, tuxedo, accent piece" required>
+              <input type="text" name="title" placeholder="Wedding gown, tuxedo, accent piece" required>
             </label>
 
             <label class="field-group">
               <span>Category</span>
-              <input type="text" placeholder="Bridal, formalwear, accessory" required>
+              <input type="text" name="category" placeholder="Bridal, formalwear, accessory" required>
+            </label>
+
+            <label class="field-group">
+              <span>Price per day (₱)</span>
+              <input type="number" name="price_per_day" min="1" step="0.01" placeholder="e.g. 650" required>
             </label>
 
             <div class="size-fields">
               <label class="field-group">
                 <span>Clothing Size</span>
-                <select required>
+                <select name="size" required>
                   <option value="">Select size</option>
                   <option>XS</option>
                   <option>S</option>
@@ -69,30 +75,30 @@
               </label>
               <label class="field-group">
                 <span>Chest / Bust (cm)</span>
-                <input type="number" min="0" step="0.5" placeholder="e.g. 92">
+                <input type="number" name="chest_cm" min="0" step="0.5" placeholder="e.g. 92">
               </label>
               <label class="field-group">
                 <span>Waist (cm)</span>
-                <input type="number" min="0" step="0.5" placeholder="e.g. 74">
+                <input type="number" name="waist_cm" min="0" step="0.5" placeholder="e.g. 74">
               </label>
               <label class="field-group">
                 <span>Length (cm)</span>
-                <input type="number" min="0" step="0.5" placeholder="e.g. 150">
+                <input type="number" name="length_cm" min="0" step="0.5" placeholder="e.g. 150">
               </label>
             </div>
 
             <label class="field-group">
               <span>Description</span>
-              <textarea placeholder="Describe the fit, condition, colors, and rental details" required></textarea>
+              <textarea name="description" placeholder="Describe the fit, condition, colors, and rental details" required></textarea>
             </label>
 
             <label class="field-group file-field">
               <span>Upload Photo</span>
-              <input type="file" accept="image/*">
+              <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
             </label>
 
-            <label class="check-row"><input type="checkbox" required> Agree to Rental Terms</label>
-            <label class="check-row"><input type="checkbox" required> Verify Item Condition</label>
+            <label class="check-row"><input type="checkbox" name="agree_terms" value="1" required> Agree to Rental Terms</label>
+            <label class="check-row"><input type="checkbox" name="verify_condition" value="1" required> Verify Item Condition</label>
 
             <button type="submit" class="primary-button">Submit for Review</button>
           </form>
