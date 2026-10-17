@@ -979,6 +979,21 @@ h1 {
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
+.container select {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f8fafc;
+  font-size: 1rem;
+}
+
+.container select:focus {
+  border-color: #2e6b3f;
+  outline: none;
+}
+
 .container input:focus {
   border-color: #2e6b3f;
   background: #ffffff;
