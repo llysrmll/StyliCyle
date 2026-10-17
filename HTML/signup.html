@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Create Account - StyliCycle</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../CSS/style.css">
 </head>
 <body class="auth-page">
   <nav class="top-nav">
@@ -21,6 +21,11 @@
       <input type="email" id="email" placeholder="Email" required>
       <input type="password" id="password" placeholder="Password" required>
       <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+      <label for="role">Account type</label>
+      <select id="role" required>
+        <option value="user">User</option>
+        <option value="admin">Admin (contact an administrator)</option>
+      </select>
       <div class="terms-section">
         <div class="terms-box">
           <h3>Terms & Conditions</h3>
@@ -52,6 +57,6 @@
       <button id="resendCodeBtn" class="secondary-button">Resend Code</button>
     </div>
   </div>
-  <script src="auth.js"></script>
+  <script src="../JS/auth.js"></script>
 </body>
 </html>
